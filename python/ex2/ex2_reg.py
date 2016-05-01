@@ -5,19 +5,41 @@ import numpy as np
 import scipy as sp
 import scipy.optimize as op
 
+marker_size = 30
+
 
 def plot_data(X, y):
-    plt.scatter(X[(y == 1), 0], X[(y == 1), 1], marker='+', s=40)
-    plt.scatter(X[(y == 0), 0], X[(y == 0), 1], marker='o', color='y', s=40)
+    plt.scatter(X[(y == 1), 0], X[(y == 1), 1], marker='+', s=marker_size)
+    plt.scatter(X[(y == 0), 0], X[(y == 0), 1], marker='o', color='y', s=marker_size)
     plt.xlabel("Microchip test 1")
     plt.ylabel("Microchip test 2")
     plt.legend(['y=1', 'y=0'])
     plt.show()
 
 
+def plot_decision_boundary(x1, x2, y, theta, lmda):
+    x1 = x1.reshape(x1.size, 1)
+    x2 = x2.reshape(x2.size, 1)
+    plt.scatter(x1[y == 1], x2[y == 1], marker='+', s=marker_size)
+    plt.scatter(x1[y == 0], x2[y == 0], marker='o', color='y', s=marker_size)
+
+    u = np.linspace(-1, 1.5, 50)
+    v = np.linspace(-1, 1.5, 50)
+    z = np.zeros(shape=(len(u), len(v)))
+    for i in range(len(u)):
+        for j in range(len(v)):
+            z[i, j] = (map_features(np.array(u[i]), np.array(v[j])).dot(np.array(theta)))
+    z = z.T
+    plt.contour(u, v, z)
+    plt.title('lambda = %f' % lmda)
+    plt.xlabel('Microchip Test 1')
+    plt.ylabel('Microchip Test 2')
+    plt.legend(['y = 1', 'y = 0', 'Decision boundary'])
+    plt.show()
+
 def map_features(x1, x2):
     degree = 6
-    out = np.ones((len(x1), 28))
+    out = np.ones((x1.size, 28))
     iteration = 0
     for i in range(1, degree + 1):
         for j in range(0, i+1):
@@ -60,17 +82,13 @@ def predict(theta, x):
 data = np.genfromtxt("ex2data2.txt", delimiter=",")
 X = data[:, 0:2].astype(float)
 y = data[:, 2].astype(int)
-# plot_data(X, y)
+#plot_data(X, y)
 
 x = map_features(X[:, 0], X[:, 1])
 y = y.reshape((len(y), 1))
 m, n = x.shape # # of training cases/features
 initial_theta = np.zeros((n, 1))
 lmda = 1
-cost = cost_function_reg(initial_theta, x, y, lmda)
-grads = gradient_function(initial_theta, x, y, lmda)
-#print('Cost at initial theta (zeros): %f\n' % cost)
-#print('Gradients at initial theta (zeros): \n', grads)
 
 ## ============= Part 2: Regularization and Accuracies =============
 ops = {"maxiter": 5000}
@@ -80,6 +98,7 @@ Result = op.minimize(fun=cost_function_reg, x0=initial_theta, args=(x, y, lmda),
 optimal_theta = Result.x
 success_msg = Result.message
 cost = cost_function_reg(optimal_theta, x, y, lmda)
-print(success_msg, ' -- ', 'Cost at optimal theta (zeros): %f ' % cost)
-
-print(lambda x: y==predict(optimal_theta, x))))
+print(success_msg, ' Cost at optimal theta (zeros): %f ' % cost)
+plot_decision_boundary(X[:,0], X[:,1], y, optimal_theta, lmda)
+p_res = predict(optimal_theta, x)
+print('Training accuracy = %f percent' % (y[np.where(p_res == y)].size/float(y.size) * 100))
