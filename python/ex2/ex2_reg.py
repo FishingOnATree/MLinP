@@ -27,23 +27,34 @@ def map_features(x1, x2):
 
 
 def sigmoid_function(z):
-    return 1.0 / (1.0 + np.exp(-z))
+    return (1.0 / (1.0 + np.exp(-z))).reshape(z.shape)
+
 
 def cost_function_reg(theta, x, y, lmda):
-    m = len(y)
-    grad = np.zeros(initial_theta.shape)
+    m, n = x.shape
+    theta = theta.reshape((n, 1))
     h = sigmoid_function(np.dot(x, theta))
     lambda_cost_adj = lmda / 2 / m * np.power(theta, 2)
-    lambda_cost_adj[0, 0] = 0  # theta 0 should not be adjusted
+    lambda_cost_adj[0] = 0  # theta 0 should not be adjusted
     diff_sum = np.multiply(y, np.log(h)) + np.multiply(np.add(1, np.negative(y)), np.log(np.add(1, np.negative(h))))
     return sum(diff_sum) / -m + lmda / 2 / m * sum(np.power(lambda_cost_adj, 2))
 
 
-def gradient_function(theta, X, y, lmda):
-    h = sigmoid_function(np.dot(x, theta))
-    lambda_adj = np.multiply(theta, lmda/m)
-    lambda_adj[0, 0] = 0 #do not touch theta0
+def gradient_function(theta, x, y, lmda):
+    m, n = x.shape
+    theta = theta.reshape((n, 1))
+    h = sigmoid_function(np.dot(x, theta)).reshape(y.shape)
+    lambda_adj = np.multiply(theta, lmda/m).reshape(theta.shape)
+    lambda_adj[0] = 0 #do not touch theta0
     return np.divide(np.dot(x.transpose(), np.subtract(h, y)), m) + lambda_adj
+
+
+def predict(theta, x):
+    m, n = x.shape
+    h = sigmoid_function(np.dot(x, theta))
+    out = np.zeros((m, 1))
+    out[(h>=0.5)] = 1
+    return out
 
 
 data = np.genfromtxt("ex2data2.txt", delimiter=",")
@@ -57,11 +68,18 @@ m, n = x.shape # # of training cases/features
 initial_theta = np.zeros((n, 1))
 lmda = 1
 cost = cost_function_reg(initial_theta, x, y, lmda)
-print('Cost at initial theta (zeros): %f\n' % cost)
+grads = gradient_function(initial_theta, x, y, lmda)
+#print('Cost at initial theta (zeros): %f\n' % cost)
+#print('Gradients at initial theta (zeros): \n', grads)
 
 ## ============= Part 2: Regularization and Accuracies =============
-#Result = op.minimize(fun=cost_function_reg, x0=initial_theta, args=(X, y, lmda), method='TNC', jac=gradient_function)
-#optimal_theta = Result.x
+ops = {"maxiter": 5000}
+Result = op.minimize(fun=cost_function_reg, x0=initial_theta, args=(x, y, lmda), method='TNC', jac=gradient_function, options=ops)
+#Result = op.fmin_tnc(cost_function_reg, initial_theta, fprime=gradient_function, args=(x, y, lmda))
+#print(Result)
+optimal_theta = Result.x
+success_msg = Result.message
+cost = cost_function_reg(optimal_theta, x, y, lmda)
+print(success_msg, ' -- ', 'Cost at optimal theta (zeros): %f ' % cost)
 
-
-
+print(lambda x: y==predict(optimal_theta, x))))
