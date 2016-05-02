@@ -49,19 +49,6 @@ def map_features(x1, x2):
     return out
 
 
-
-
-
-def cost_function_reg(theta, x, y, lmda):
-    m, n = x.shape
-    theta = theta.reshape((n, 1))
-    h = ut.sigmoid_function(np.dot(x, theta))
-    lambda_cost_adj = lmda / 2 / m * np.power(theta, 2)
-    lambda_cost_adj[0] = 0  # theta 0 should not be adjusted
-    diff_sum = np.multiply(y, np.log(h)) + np.multiply(np.add(1, np.negative(y)), np.log(np.add(1, np.negative(h))))
-    return sum(diff_sum) / -m + lmda / 2 / m * sum(np.power(lambda_cost_adj, 2))
-
-
 def gradient_function(theta, x, y, lmda):
     m, n = x.shape
     theta = theta.reshape((n, 1))
@@ -92,12 +79,12 @@ lmda = 1
 
 ## ============= Part 2: Regularization and Accuracies =============
 ops = {"maxiter": 5000}
-Result = op.minimize(fun=cost_function_reg, x0=initial_theta, args=(x, y, lmda), method='TNC', jac=gradient_function, options=ops)
+Result = op.minimize(fun=ut.logistic_cost_function, x0=initial_theta, args=(x, y, lmda), method='TNC', jac=gradient_function, options=ops)
 #Result = op.fmin_tnc(cost_function_reg, initial_theta, fprime=gradient_function, args=(x, y, lmda))
 #print(Result)
 optimal_theta = Result.x
 success_msg = Result.message
-cost = cost_function_reg(optimal_theta, x, y, lmda)
+cost = ut.logistic_cost_function(optimal_theta, x, y, lmda)
 print(success_msg, ' Cost at optimal theta (zeros): %f ' % cost)
 plot_decision_boundary(X[:,0], X[:,1], y, optimal_theta, lmda)
 p_res = predict(optimal_theta, x)
