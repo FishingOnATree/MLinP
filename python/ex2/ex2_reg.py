@@ -2,8 +2,8 @@ __author__ = 'Rays'
 
 import matplotlib.pyplot as plt
 import numpy as np
-import scipy as sp
 import scipy.optimize as op
+from util_functions import util_functions as ut
 
 marker_size = 30
 
@@ -37,6 +37,7 @@ def plot_decision_boundary(x1, x2, y, theta, lmda):
     plt.legend(['y = 1', 'y = 0', 'Decision boundary'])
     plt.show()
 
+
 def map_features(x1, x2):
     degree = 6
     out = np.ones((x1.size, 28))
@@ -48,14 +49,13 @@ def map_features(x1, x2):
     return out
 
 
-def sigmoid_function(z):
-    return (1.0 / (1.0 + np.exp(-z))).reshape(z.shape)
+
 
 
 def cost_function_reg(theta, x, y, lmda):
     m, n = x.shape
     theta = theta.reshape((n, 1))
-    h = sigmoid_function(np.dot(x, theta))
+    h = ut.sigmoid_function(np.dot(x, theta))
     lambda_cost_adj = lmda / 2 / m * np.power(theta, 2)
     lambda_cost_adj[0] = 0  # theta 0 should not be adjusted
     diff_sum = np.multiply(y, np.log(h)) + np.multiply(np.add(1, np.negative(y)), np.log(np.add(1, np.negative(h))))
@@ -65,7 +65,7 @@ def cost_function_reg(theta, x, y, lmda):
 def gradient_function(theta, x, y, lmda):
     m, n = x.shape
     theta = theta.reshape((n, 1))
-    h = sigmoid_function(np.dot(x, theta)).reshape(y.shape)
+    h = ut.sigmoid_function(np.dot(x, theta)).reshape(y.shape)
     lambda_adj = np.multiply(theta, lmda/m).reshape(theta.shape)
     lambda_adj[0] = 0 #do not touch theta0
     return np.divide(np.dot(x.transpose(), np.subtract(h, y)), m) + lambda_adj
@@ -73,7 +73,7 @@ def gradient_function(theta, x, y, lmda):
 
 def predict(theta, x):
     m, n = x.shape
-    h = sigmoid_function(np.dot(x, theta))
+    h = ut.sigmoid_function(np.dot(x, theta))
     out = np.zeros((m, 1))
     out[(h>=0.5)] = 1
     return out
