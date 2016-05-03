@@ -3,12 +3,14 @@ __author__ = 'Rays'
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.optimize as op
+import os.path
 from util_functions import util_functions as ut
+import random
 
 input_layer_size  = 400;  # 20x20 Input Images of Digits
 num_labels = 10;          # 10 labels, from 1 to 10
                           # (note that we have mapped "0" to label 10)
-l = 0.1
+l = 0.7
 
 def show_images(sample):
     plt.imshow(X[sample, 1:].reshape(-1, 20).T)
@@ -32,11 +34,29 @@ def one_vs_all(x, y, l):
         classifier = (y == (k+1)) * 1
         # cost = ut.logistic_cost_function(initial_theta, x, classifier, l)
         # print("Initial cost = %f" % cost)
-        ops = {"maxiter": 5000}
-        result = op.minimize(fun=ut.logistic_cost_function, x0=initial_theta, args=(x, y, l), method='TNC', jac=gradient_function, options=ops)
+        ops = {"maxiter": 10000}
+        result = op.minimize(fun=ut.logistic_cost_function, x0=initial_theta, args=(x, classifier, l), method='TNC', jac=gradient_function, options=ops)
         print('%d result = %s' % (k+1, result.success))
+        while not result.success:
+            # try until success
+            initial_theta = np.random.rand(x.shape[1], 1)
+            result = op.minimize(fun=ut.logistic_cost_function, x0=initial_theta, args=(x, classifier, l), method='TNC', jac=gradient_function, options=ops)
+            print('    Retry result = %s' % result.success)
+        all_theta[k, :] = np.array(result.x).T
     print(all_theta.shape)
     return all_theta
+
+
+def predict(theta, x):
+    result = np.zeros((x.shape[0], 1))
+    for m in range(x.shape[0]):
+        case = x[m, :].reshape((x.shape[1], 1))
+        prediction = ut.sigmoid_function(theta.dot(case))
+        result[m, 0] = np.argmax(prediction) + 1
+        if random.uniform(0, 1) < 0.01:
+            print('prediction max: ', prediction[np.argmax(prediction)], ' => ' , np.argmax(prediction) + 1)
+            print(prediction)
+    return result
 
 
 X = np.load('X.npy')
@@ -47,4 +67,12 @@ theta1 = np.load('theta2.npy')
 
 sample = np.random.choice(X.shape[0], 20)
 #show_images(sample)
-one_vs_all(X, y, l)
+if os.path.isfile('optimal_theta.npy'):
+    optimal_theta = np.load('optimal_theta.npy')
+    print('there')
+else:
+    optimal_theta = one_vs_all(X, y, l)
+    np.save('optimal_theta.npy', optimal_theta)
+    print('here')
+prediction = predict(optimal_theta, X)
+print('Training accuracy = %f percent' % (sum((prediction==y) * 1)[0] * 100.0 / y.shape[0]) )
