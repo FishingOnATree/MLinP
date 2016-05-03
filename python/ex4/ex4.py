@@ -32,7 +32,9 @@ def nn_cost_function(theta1, theta2, x, y, l):
     a2 = np.c_[np.ones((h1.shape[0], 1)), h1] # add intercept terms
     # h2 = ut.sigmoid_function(a2.dot(theta2.T))
     # print(h2.shape)
-    return ut.logistic_cost_function(theta2.T, a2, y_classifier, l)
+    regularized_terms = l / 2.0 / m * ( sum(sum(np.power(theta1[:, 1:], 2))) +
+                                        sum(sum(np.power(theta2[:, 1:], 2))) )
+    return ut.logistic_cost_function(theta2.T, a2, y_classifier, 0) + regularized_terms
 
 # load data
 data = sio.loadmat('ex4data1.mat')
@@ -44,4 +46,8 @@ theta2 = data_weights['Theta2']
 
 l = 0
 cost = nn_cost_function(theta1, theta2, X, y, l)
-print(' Cost at initial theta (zeros): %f ' % cost)
+print(' Cost at initial theta (zeros) with lambda=0: %f ' % cost)
+
+l = 1
+cost = nn_cost_function(theta1, theta2, X, y, l)
+print(' Cost at initial theta (zeros) with lambda=1: %f ' % cost)
