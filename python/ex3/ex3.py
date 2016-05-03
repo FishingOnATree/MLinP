@@ -59,8 +59,6 @@ def predict(theta, x):
 X = np.load('X.npy')
 X = np.c_[np.ones((X.shape[0], 1)), X] # add intercept terms
 y = np.load('y.npy')
-theta1 = np.load('theta1.npy')
-theta1 = np.load('theta2.npy')
 
 sample = np.random.choice(X.shape[0], 20)
 #show_images(sample)
