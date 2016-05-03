@@ -23,7 +23,6 @@ def predict(theta1, theta2, x):
     a2 = np.c_[np.ones((h2.shape[0], 1)), h2]
     z3 = a2.dot(theta2.T)
     h3 = ut.sigmoid_function(z3)
-    print(h3.shape)
     return (np.argmax(h3, axis=1).reshape(x.shape[0], 1) + 1) # data converted from Octave where the index started from 1
 
 
