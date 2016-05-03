@@ -64,10 +64,10 @@ sample = np.random.choice(X.shape[0], 20)
 #show_images(sample)
 if os.path.isfile('optimal_theta.npy'):
     optimal_theta = np.load('optimal_theta.npy')
-    print('generating theta')
+    print('using pre-calculated theta')
 else:
     optimal_theta = one_vs_all(X, y, l)
     np.save('optimal_theta.npy', optimal_theta)
-    print('using pre-calculated theta')
+    print('generating theta')
 prediction = predict(optimal_theta, X)
 print('Training accuracy = %f percent' % (sum((prediction==y) * 1)[0] * 100.0 / y.shape[0]))
