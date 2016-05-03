@@ -53,9 +53,6 @@ def predict(theta, x):
         case = x[m, :].reshape((x.shape[1], 1))
         prediction = ut.sigmoid_function(theta.dot(case))
         result[m, 0] = np.argmax(prediction) + 1
-        if random.uniform(0, 1) < 0.01:
-            print('prediction max: ', prediction[np.argmax(prediction)], ' => ' , np.argmax(prediction) + 1)
-            print(prediction)
     return result
 
 
@@ -69,10 +66,10 @@ sample = np.random.choice(X.shape[0], 20)
 #show_images(sample)
 if os.path.isfile('optimal_theta.npy'):
     optimal_theta = np.load('optimal_theta.npy')
-    print('there')
+    print('generating theta')
 else:
     optimal_theta = one_vs_all(X, y, l)
     np.save('optimal_theta.npy', optimal_theta)
-    print('here')
+    print('using pre-calculated theta')
 prediction = predict(optimal_theta, X)
-print('Training accuracy = %f percent' % (sum((prediction==y) * 1)[0] * 100.0 / y.shape[0]) )
+print('Training accuracy = %f percent' % (sum((prediction==y) * 1)[0] * 100.0 / y.shape[0]))
